@@ -17,7 +17,7 @@ namespace ContainerVervoer.Logic
             MaxWeight = maxWeight;
         }
 
-        public void Divide(List<CargoObject> containers)
+        public ContainerRow[] Divide(List<Container> containers)
         {
             // Verify total weight is sufficient
             int totalWeight = containers.Sum(c => c.Weight);
@@ -31,12 +31,19 @@ namespace ContainerVervoer.Logic
             // Sort
             // First by coolable (should always be in the first row)
             // Then by valuable (should be either in the first row or the last row)
-            List<CargoObject> sortedContainers = containers.OrderBy(v => v.Type.HasFlag(ContainerType.Coolable)).ThenBy(v => v.Type.HasFlag(ContainerType.Valuable)).ToList();
+            List<Container> sortedContainers = containers.OrderBy(v => v.Type.HasFlag(ContainerType.Coolable)).ThenBy(v => v.Type.HasFlag(ContainerType.Valuable)).ThenByDescending(v => v.Weight).ToList();
 
+            // Loop over all sorted containers
             for (int i = 0; i < sortedContainers.Count; i++)
             {
                 bool successful = false;
-                for (int j = 0; j < rows.Length; j++)
+
+                // Sort rows by least current containers
+                // We want to fill the one with the least containers first
+                ContainerRow[] sortedRows = rows.OrderBy(r => r.GetTotalContainers()).ToArray();
+
+                // Loop over all rows
+                for (int j = 0; j < sortedRows.Length; j++)
                 {
                     // Is coolable and not in front
                     if (sortedContainers[i].Type.HasFlag(ContainerType.Coolable) && j != 0)
@@ -53,7 +60,7 @@ namespace ContainerVervoer.Logic
                     }
 
                     // Valid position, try to add
-                    if (rows[j].TryAdd(sortedContainers[i]))
+                    if (sortedRows[j].TryAdd(sortedContainers[i]))
                     {
                         // Successful, look at next container
                         successful = true;
@@ -61,15 +68,16 @@ namespace ContainerVervoer.Logic
                     }
                 }
 
-                // Unsuccessful, throw
+                // Was not able to add container anywhere
                 if (!successful)
                 {
-                    // Well, well, well... Look what we've got here!
-                    throw new Exception($"Could not add container");
+                    throw new Exception($"Could not add container to ship!");
                 }
 
                 // Successful
             }
+
+            return rows;
         }
     }
 }

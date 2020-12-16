@@ -1,4 +1,6 @@
-﻿namespace ContainerVervoer.Logic
+﻿using System.Linq;
+
+namespace ContainerVervoer.Logic
 {
     public class ContainerRow
     {
@@ -17,7 +19,7 @@
             for (int i = 0; i < columns; i++) Columns[i] = new ContainerColumn();
         }
 
-        public bool TryAdd(CargoObject container)
+        public bool TryAdd(Container container)
         {
             // Fill from left, then right
             for (int i = 0; i < Columns.Length / 2; i++)
@@ -35,6 +37,23 @@
                 // Odd with, scan centre
                 return Columns[Columns.Length / 2].TryAdd(container);
             }
+        }
+
+        public override string ToString()
+        {
+            string s = "";
+
+            foreach (ContainerColumn column in Columns)
+            {
+                s += column.ToString() + "\n";
+            }
+
+            return s;
+        }
+
+        public int GetTotalContainers()
+        {
+            return Columns.Sum(c => c.GetTotalContainers());
         }
     }
 }

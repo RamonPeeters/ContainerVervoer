@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace ContainerVervoer.Logic
 {
@@ -11,48 +12,74 @@ namespace ContainerVervoer.Logic
         // X....
 
 
-        private readonly List<CargoObject> Containers;
+        private readonly List<Container> Containers;
 
         public ContainerColumn()
         {
             // Initialise
-            Containers = new List<CargoObject>();
+            Containers = new List<Container>();
         }
 
-        public bool TryAdd(CargoObject container)
+        public bool TryAdd(Container container)
         {
-            // Maximum weight
-            // The bottom container will have the most weight on top of them, so we only have to check that one.
-            // If that one does not fail, none will.
-            // [!] objects may have different "max weights"
-            if (GetTotalWeightWithContainer(container) > CargoObject.MAX_WEIGHT_ON_TOP)
+            /*
+             * If we know the container is VALUABLE, it has to be on TOP
+             * 
+             * 
+             * 
+             * 
+             */
+
+
+            // Check weight
+            if (!MayPlaceOnTopOfContainer(0, container)) return false;
+
+            // From this point on we know the weight is sufficient, wherever we place it.
+            // Already has a valuable container
+            if (Containers.Any(c => c.Type.HasFlag(ContainerType.Valuable)))
             {
-                return false;
-            }
+                // Cannot have more than one valuable, since they cannot be placed on top of each other.
+                if (container.Type.HasFlag(ContainerType.Valuable)) return false;
 
-
-
-
-
-
-            // Valuable, must be on top
-            if (container.Type.HasFlag(ContainerType.Valuable))
+                // Otherwise, insert directly below the last one
+                Containers.Insert(Containers.Count - 2, container);
+                return true;
+            } else
             {
+                // Add on top
                 Containers.Add(container);
+                return true;
             }
-            return true;
         }
 
-        private int GetTotalWeightWithContainer(CargoObject container)
+        private bool MayPlaceOnTopOfContainer(int containerIndex, Container withContainer)
         {
-            int totalWeight = container.Weight;
-
-            for (int i = 0; i < Containers.Count; i++)
+            // Get total weight on top of container, including the one to insert
+            int totalWeight = withContainer.Weight;
+            for (int i = containerIndex + 1; i < Containers.Count; i++)
             {
                 totalWeight += Containers[i].Weight;
             }
 
-            return totalWeight;
+            // The total new weight on top is less than or equal to max weight on top
+            return totalWeight <= Container.GetMaxWeightOnTop();
+        }
+
+        public override string ToString()
+        {
+            string s = "";
+
+            foreach (Container container in Containers)
+            {
+                s += container.ToString() + ", ";
+            }
+
+            return s;
+        }
+
+        public int GetTotalContainers()
+        {
+            return Containers.Count;
         }
     }
 }

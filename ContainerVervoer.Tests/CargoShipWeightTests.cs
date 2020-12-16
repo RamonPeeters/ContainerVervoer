@@ -13,7 +13,7 @@ namespace ContainerVervoer.Tests
         {
             // Arrange
             CargoShip ship = new CargoShip(1, 1, 10000);
-            List<CargoObject> containers = new List<CargoObject>() { new Container(0, ContainerType.Normal) };
+            List<Container> containers = new List<Container>() { new Container(0, ContainerType.Normal) };
 
             // Act, Assert
             Assert.ThrowsException<Exception>(() => ship.Divide(containers));
@@ -24,7 +24,7 @@ namespace ContainerVervoer.Tests
         {
             // Arrange
             CargoShip ship = new CargoShip(1, 1, 10000);
-            List<CargoObject> containers = new List<CargoObject>() { new Container(100000, ContainerType.Normal) };
+            List<Container> containers = new List<Container>() { new Container(100000, ContainerType.Normal) };
 
             // Act, Assert
             Assert.ThrowsException<Exception>(() => ship.Divide(containers));
