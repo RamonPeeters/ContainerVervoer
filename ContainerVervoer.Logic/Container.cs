@@ -3,7 +3,7 @@
     public class Container
     {
         private const int MAX_WEIGHT_ON_TOP = 120000000;
-        private const int EMPTY_CONTAINER_WEIGHT = 4000;
+        private const int EMPTY_CONTAINER_WEIGHT = 0;
 
         private readonly int _Weight;
         public int Weight { get { return EMPTY_CONTAINER_WEIGHT + _Weight; } }

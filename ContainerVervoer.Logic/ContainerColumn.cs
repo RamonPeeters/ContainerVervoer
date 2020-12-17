@@ -1,17 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace ContainerVervoer.Logic
 {
     public class ContainerColumn
     {
-        // X....
-        // X....
-        // X....
-        // X....
-        // X....
-
-
         private readonly List<Container> Containers;
 
         public ContainerColumn()
@@ -22,15 +16,6 @@ namespace ContainerVervoer.Logic
 
         public bool TryAdd(Container container)
         {
-            /*
-             * If we know the container is VALUABLE, it has to be on TOP
-             * 
-             * 
-             * 
-             * 
-             */
-
-
             // Check weight
             if (!MayPlaceOnTopOfContainer(0, container)) return false;
 
@@ -42,7 +27,7 @@ namespace ContainerVervoer.Logic
                 if (container.Type.HasFlag(ContainerType.Valuable)) return false;
 
                 // Otherwise, insert directly below the last one
-                Containers.Insert(Containers.Count - 2, container);
+                Containers.Insert(Math.Max(Containers.Count - 2, 0), container);
                 return true;
             } else
             {
@@ -50,6 +35,11 @@ namespace ContainerVervoer.Logic
                 Containers.Add(container);
                 return true;
             }
+        }
+
+        public int GetTotalWeight()
+        {
+            return Containers.Sum(c => c.Weight);
         }
 
         private bool MayPlaceOnTopOfContainer(int containerIndex, Container withContainer)
@@ -67,7 +57,7 @@ namespace ContainerVervoer.Logic
 
         public override string ToString()
         {
-            string s = "";
+            string s = $"Weight: {GetTotalWeight():#######0}, ";
 
             foreach (Container container in Containers)
             {
