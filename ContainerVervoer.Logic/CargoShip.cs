@@ -39,7 +39,7 @@ namespace ContainerVervoer.Logic
             ContainerRow[] rows = new ContainerRow[Width];
             for (int i = 0; i < Width; i++) rows[i] = new ContainerRow(Length);
 
-            List<Container> sortedContainers = containers.OrderByDescending(v => v.Type.HasFlag(ContainerType.Coolable)).ThenByDescending(v => v.Type.HasFlag(ContainerType.Valuable)).ToList();
+            List<Container> sortedContainers = containers.OrderByDescending(v => v.Type.HasFlag(ContainerType.Coolable)).ThenByDescending(v => v.Type.HasFlag(ContainerType.Valuable)).ThenByDescending(v => v.Weight).ToList();
 
             foreach (var a in sortedContainers)
             {
@@ -82,13 +82,15 @@ namespace ContainerVervoer.Logic
 
             int totalLeft = 0;
             int totalRight = 0;
+            int totalCentre = 0;
             for (int i = 0; i < Rows.Length; i++)
             {
                 totalLeft += Rows[i].GetTotalWeightLeft();
                 totalRight += Rows[i].GetTotalWeightRight();
+                totalCentre += Rows[i].GetTotalWeightCentre();
             }
 
-            return $"L: {totalLeft:########0}\nR: {totalRight:########0}\nD: {((double)totalLeft)/(totalLeft + totalRight)}";
+            return $"L: {totalLeft:#0}\nR: {totalRight:#0}\nD: {((double)totalLeft)/(totalLeft + totalRight)}\nCentre: {totalCentre:#0}";
         }
 
         private int GetTotalWeightLeft(ContainerRow[] rows)

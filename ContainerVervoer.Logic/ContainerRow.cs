@@ -16,28 +16,7 @@ namespace ContainerVervoer.Logic
 
         public bool TryAdd(Container container, double totalLeft, double totalRight)
         {
-            // double leftTotalRatio
-            //
-            // Het schip moet in evenwicht zijn: het volledige gewicht van de containers voor iedere helft mag niet meer dan 20% van de totale lading verschillen.
-            //
-
-            //for (int i = 0; i < Columns.Length; i++)
-            //{
-            //    if (Columns[i].TryAdd(container)) return true;
-            //}
-            //return false;
-
-            // get total weight
-            int currentTotalWeightLeft = GetTotalWeightLeft();
-            int currentTotalWeightRight = GetTotalWeightRight();
-            double currentTotalWeight = GetTotalWeight();
-
             double leftTotalRatio = totalLeft / (totalLeft + totalRight);
-            double rightTotalRatio = totalRight / (totalLeft + totalRight);
-
-            // gewicht aan een kant (left)
-            // mag niet meer
-
             if (leftTotalRatio > 0.5d)
             {
                 return TryAddRight(container);
@@ -49,25 +28,28 @@ namespace ContainerVervoer.Logic
 
         private bool TryAddLeft(Container container)
         {
-            for (int i = 0; i < Columns.Length / 2; i++)
+            ContainerColumn[] sortedLeftColumns = Columns.Where((x, i) => i < Columns.Length / 2).OrderBy(x => x.GetTotalWeight()).ToArray();
+            for (int i = 0; i < sortedLeftColumns.Length; i++)
             {
-                if (Columns[i].TryAdd(container)) return true;
+                if (sortedLeftColumns[i].TryAdd(container)) return true;
             }
-            return false;
+            return TryAddCentre(container);
         }
 
         private bool TryAddRight(Container container)
         {
-            for (int i = 0; i < Columns.Length / 2; i++)
+            ContainerColumn[] sortedRightColumns = Columns.Where((x, i) => i > Columns.Length / 2).OrderBy(x => x.GetTotalWeight()).ToArray();
+            for (int i = 0; i < sortedRightColumns.Length; i++)
             {
-                if (Columns[^(i + 1)].TryAdd(container)) return true;
+                if (sortedRightColumns[i].TryAdd(container)) return true;
             }
-            return false;
+            return TryAddCentre(container);
         }
 
-        public int GetTotalWeight()
+        private bool TryAddCentre(Container container)
         {
-            return Columns.Sum(c => c.GetTotalWeight());
+            if (Columns.Length % 2 == 0) return false;
+            else return Columns[Columns.Length / 2].TryAdd(container);
         }
 
         public int GetTotalWeightLeft()
@@ -88,6 +70,12 @@ namespace ContainerVervoer.Logic
                 total += Columns[^(i + 1)].GetTotalWeight();
             }
             return total;
+        }
+
+        public int GetTotalWeightCentre()
+        {
+            if (Columns.Length % 2 == 0) return 0;
+            return Columns[Columns.Length / 2].GetTotalWeight();
         }
 
         public override string ToString()
