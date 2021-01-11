@@ -62,7 +62,7 @@ namespace ContainerVervoer.Logic
 
                 for (int j = 0; j < sortedRows.Length; j++)
                 {
-                    if (TryThingContainer(rows, originalIndices[j], sortedContainers[i]))
+                    if (TryAddContainer(rows, originalIndices[j], sortedContainers[i]))
                     {
                         successful = true;
                         break;
@@ -76,21 +76,19 @@ namespace ContainerVervoer.Logic
             return rows;
         }
 
-        public string GetTotalWeightString()
+        public double GetLeftWeightRatio()
         {
-            if (Rows == null) return "";
+            return (double)GetTotalWeightLeft(Rows) / GetTotalWeight(Rows);
+        }
 
-            int totalLeft = 0;
-            int totalRight = 0;
-            int totalCentre = 0;
-            for (int i = 0; i < Rows.Length; i++)
+        private int GetTotalWeight(ContainerRow[] rows)
+        {
+            int total = 0;
+            for (int i = 0; i < rows.Length; i++)
             {
-                totalLeft += Rows[i].GetTotalWeightLeft();
-                totalRight += Rows[i].GetTotalWeightRight();
-                totalCentre += Rows[i].GetTotalWeightCentre();
+                total += rows[i].GetTotalWeight();
             }
-
-            return $"L: {totalLeft:#0}\nR: {totalRight:#0}\nD: {((double)totalLeft)/(totalLeft + totalRight)}\nCentre: {totalCentre:#0}";
+            return total;
         }
 
         private int GetTotalWeightLeft(ContainerRow[] rows)
@@ -113,20 +111,13 @@ namespace ContainerVervoer.Logic
             return total;
         }
 
-        private bool TryThingContainer(ContainerRow[] rows, int index, Container container)
+        private bool TryAddContainer(ContainerRow[] rows, int index, Container container)
         {
-            // Is coolable and not in front
             if (container.Type.HasFlag(ContainerType.Coolable) && index != 0) return false;
-
-            // Is valuable and not in front or back
             if (container.Type.HasFlag(ContainerType.Valuable) && index != 0 && index != rows.Length - 1) return false;
-
-            // Valid position, try to add
 
             int totalLeft = GetTotalWeightLeft(rows);
             int totalRight = GetTotalWeightRight(rows);
-            double leftTotalRatio = (double)totalLeft / (totalLeft + totalRight);
-
             return rows[index].TryAdd(container, totalLeft, totalRight);
         }
     }

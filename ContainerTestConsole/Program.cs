@@ -45,7 +45,7 @@ namespace ContainerTestConsole
                 new Container(294, ContainerType.Valuable),
                 new Container(624, ContainerType.Valuable),
                 new Container(157, ContainerType.Valuable),
-                new Container(345, ContainerType.ValuableAndCoolable),
+                new Container(345, ContainerType.ValuableAndCoolable)
             };
 
             CargoShip ship = new CargoShip(5, 7, containers.Sum(c => c.Weight));
@@ -53,19 +53,30 @@ namespace ContainerTestConsole
             try
             {
                 ContainerRow[] rows = ship.Divide(containers);
-
                 for (int i = 0; i < rows.Length; i++)
                 {
                     Console.WriteLine($"----------- {i}:");
                     Console.Write(rows[i].ToString());
                 }
-                Console.WriteLine("-----------");
+                Console.WriteLine("\n\n" + GetTotalWeightString(rows));
+            } catch (Exception e) { Console.WriteLine(e.Message); }
+        }
 
-                Console.WriteLine(ship.GetTotalWeightString());
-            } catch (Exception e)
+        private static string GetTotalWeightString(ContainerRow[] rows)
+        {
+            if (rows == null) return "";
+
+            int totalLeft = 0;
+            int totalRight = 0;
+            int totalCentre = 0;
+            for (int i = 0; i < rows.Length; i++)
             {
-                Console.WriteLine(e.Message);
+                totalLeft += rows[i].GetTotalWeightLeft();
+                totalRight += rows[i].GetTotalWeightRight();
+                totalCentre += rows[i].GetTotalWeightCentre();
             }
+
+            return $"L: {totalLeft:#0}\nR: {totalRight:#0}\nD: {((double)totalLeft) / (totalLeft + totalRight)}\nCentre: {totalCentre:#0}";
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 
 namespace ContainerVervoer.Logic
 {
@@ -9,10 +8,11 @@ namespace ContainerVervoer.Logic
 
         public ContainerRow(int columns)
         {
-            // Initialise and populate
             Columns = new ContainerColumn[columns];
             for (int i = 0; i < columns; i++) Columns[i] = new ContainerColumn();
         }
+
+        public ContainerColumn this[int index] { get { return Columns[index]; } }
 
         public bool TryAdd(Container container, double totalLeft, double totalRight)
         {
@@ -38,7 +38,9 @@ namespace ContainerVervoer.Logic
 
         private bool TryAddRight(Container container)
         {
-            ContainerColumn[] sortedRightColumns = Columns.Where((x, i) => i > Columns.Length / 2).OrderBy(x => x.GetTotalWeight()).ToArray();
+            ContainerColumn[] sortedRightColumns;
+            if (Columns.Length % 2 == 0) sortedRightColumns = Columns.Where((x, i) => i >= Columns.Length / 2).OrderBy(x => x.GetTotalWeight()).ToArray();
+            else sortedRightColumns = Columns.Where((x, i) => i > Columns.Length / 2).OrderBy(x => x.GetTotalWeight()).ToArray();
             for (int i = 0; i < sortedRightColumns.Length; i++)
             {
                 if (sortedRightColumns[i].TryAdd(container)) return true;
@@ -50,6 +52,16 @@ namespace ContainerVervoer.Logic
         {
             if (Columns.Length % 2 == 0) return false;
             else return Columns[Columns.Length / 2].TryAdd(container);
+        }
+
+        public int GetTotalWeight()
+        {
+            int total = 0;
+            for (int i = 0; i < Columns.Length; i++)
+            {
+                total += Columns[i].GetTotalWeight();
+            }
+            return total;
         }
 
         public int GetTotalWeightLeft()

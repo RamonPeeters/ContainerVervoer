@@ -1,4 +1,6 @@
-﻿namespace ContainerVervoer.Logic
+﻿using System;
+
+namespace ContainerVervoer.Logic
 {
     public class Container
     {
@@ -28,6 +30,18 @@
             s += Type.HasFlag(ContainerType.Valuable) ? "V" : "-";
 
             return s + "'";
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is Container container &&
+                   Weight == container.Weight &&
+                   Type == container.Type;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Weight, Type);
         }
     }
 }
